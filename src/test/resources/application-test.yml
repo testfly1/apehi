@@ -1,0 +1,123 @@
+logging:
+  file: \tmp\api-test.log 
+
+openam:
+  url: localhost
+  port: 14630
+  ssl: false
+  deploymentPath: openam
+  adminUser: amAdmin
+  adminPwd: Password1
+  cookieName: iPlanetDirectoryPro
+  adminServiceChain: adminconsoleservice
+
+ldap:
+  url: localhost
+  port: 1389
+  ssl: false
+  baseDN: dc=example,dc=com
+  ou: tokens
+  userName: cn=Directory Manager
+  password: Password123
+
+ssl:
+  bypassCertificates: true
+
+soap:
+  url: localhost
+  port: 8443
+  ssl: false
+  deploymentPath: ATS_MessageService
+  application: QA
+  organization: IAM_SUPPORT
+  login: login_test
+  password: password_test
+  bypassSendingToken: true
+  bypassAuthorization: true
+          
+schemas:
+    schema_test_1:
+      scope: scope_test_1
+      properties: 
+        voice: 
+          maxValidityTime: 10
+          maxSuccessfulAttempt: 1
+          maxFailedAttempt: 1
+          lockDuration: -1
+          language: en
+        sms: 
+          maxValidityTime: 10
+          maxSuccessfulAttempt: 1
+          maxFailedAttempt: 1
+          lockDuration: -1
+          sender: sender_test
+          language: en
+        mail: 
+          maxValidityTime: 10
+          maxSuccessfulAttempt: 1
+          maxFailedAttempt: 1
+          lockDuration: -1
+          sender: sender_test
+          language: en
+        none: 
+          maxValidityTime: 10
+          maxSuccessfulAttempt: 1
+          maxFailedAttempt: 1
+          lockDuration: -1
+    schema_test_2:
+      scope: scope_test_2
+      properties: 
+        voice: 
+          maxValidityTime: 60
+          maxSuccessfulAttempt: 3
+          maxFailedAttempt: 3
+          lockDuration: 10
+          language: fr
+        sms: 
+          maxValidityTime: 60
+          maxSuccessfulAttempt: 3
+          maxFailedAttempt: 3
+          lockDuration: 10
+          sender: sender_test
+          language: fr
+        mail: 
+          maxValidityTime: 60
+          maxSuccessfulAttempt: 3
+          maxFailedAttempt: 3
+          lockDuration: 10
+          sender: sender_test
+          language: fr
+        none: 
+          maxValidityTime: 60
+          maxSuccessfulAttempt: 3
+          maxFailedAttempt: 3
+          sender: sender_test
+          lockDuration: 10
+    schema_test-noscope:
+      scope:
+      properties: 
+        voice: 
+          maxValidityTime: 7
+          maxSuccessfulAttempt: 10
+          maxFailedAttempt: 5
+          lockDuration: 2
+          language: de
+        sms: 
+          maxValidityTime: 8
+          maxSuccessfulAttempt: 10
+          maxFailedAttempt: 5
+          lockDuration: 3
+          sender: sender_test
+          language: en
+        mail: 
+          maxValidityTime: 9
+          maxSuccessfulAttempt: 10
+          maxFailedAttempt: 50
+          lockDuration: 4
+          sender: sender_test
+          language: fr
+        none: 
+          maxValidityTime: 10
+          maxSuccessfulAttempt: 10
+          maxFailedAttempt: 5 
+          lockDuration: 5

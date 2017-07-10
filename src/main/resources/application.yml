@@ -1,0 +1,111 @@
+debug: false
+server:
+  port: 8080
+spring:
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+  aop:
+    proxy-target-class: true
+
+logging:
+  file: ${API_LOG_FILEPATH}  
+  pattern:
+    console: "%msg%n"
+    file: "%msg%n"
+  level:
+    root: info
+    com.axa.api: info
+    org.springframework: off
+
+openam:
+  url: ${OPENAM_URL}
+  port: ${OPENAM_PORT}
+  ssl: ${OPENAM_SSL}
+  deploymentPath: ${OPENAM_DEPLOYMENTPATH}
+  adminUser: ${OPENAM_ADMINUSER}
+  adminPwd: ${OPENAM_ADMINPWD}
+  cookieName: ${OPENAM_COOKIENAME}
+  adminServiceChain: ${OPENAM_ADMINSERVICECHAIN}
+
+ldap:
+  url: ${LDAP_URL}
+  port: ${LDAP_PORT}
+  ssl: ${LDAP_SSL}
+  baseDN: ${LDAP_BASEDN}
+  ou: ${LDAP_OU}
+  userName: ${LDAP_USERNAME}
+  password: ${LDAP_PASSWORD}
+
+ssl:
+  bypassCertificates: ${SSL_BYPASSCERTIFICATES:false}
+
+soap:
+  url: ${SOAP_URL}
+  port: ${SOAP_PORT}
+  ssl: ${SOAP_SSL}
+  deploymentPath: ${SOAP_DEPLOYMENTPATH}
+  application: ${SOAP_APPLICATION}
+  organization: ${SOAP_ORGANIZATION}
+  login: ${SOAP_LOGIN}
+  password: ${SOAP_PASSWORD}
+  bypassSendingToken: ${SOAP_BYPASSSENDINGTOKEN:false}
+  bypassAuthorization: ${SOAP_BYPASSAUTHORIZATION:false}
+
+schemas:
+    myAxaCh:
+      scope: AXA-CH-B2C
+      properties: 
+        voice: 
+          maxValidityTime: 300
+          maxSuccessfulAttempt: 1
+          maxFailedAttempt: 5
+          lockDuration: -1
+          language: en
+        sms: 
+          maxValidityTime: 300
+          maxSuccessfulAttempt: 1
+          maxFailedAttempt: 5
+          lockDuration: -1
+          sender: OTP-API
+          language: en
+        mail: 
+          maxValidityTime: 432000
+          maxSuccessfulAttempt: 10
+          maxFailedAttempt: 50
+          lockDuration: -1
+          sender: OTP-API
+          language: en
+        none: 
+          maxValidityTime: 432000
+          maxSuccessfulAttempt: 10
+          maxFailedAttempt: 5 
+          lockDuration: -1
+    myAxaCh-noscope:
+      scope:
+      properties: 
+        voice: 
+          maxValidityTime: 300
+          maxSuccessfulAttempt: 1
+          maxFailedAttempt: 5
+          lockDuration: -1
+          language: en
+        sms: 
+          maxValidityTime: 300
+          maxSuccessfulAttempt: 1
+          maxFailedAttempt: 5
+          lockDuration: -1
+          sender: OTP-API
+          language: en
+        mail: 
+          maxValidityTime: 432000
+          maxSuccessfulAttempt: 10
+          maxFailedAttempt: 50
+          lockDuration: -1
+          sender: OTP-API
+          language: en
+        none: 
+          maxValidityTime: 432000
+          maxSuccessfulAttempt: 10
+          maxFailedAttempt: 5 
+          lockDuration: -1
