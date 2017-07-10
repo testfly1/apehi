@@ -122,12 +122,11 @@ public class Unlock {
 		tv.setSchema(tok.getSchema());
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-			
-		ResponseEntity<Status> resp2;
+
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
 				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -194,12 +193,11 @@ public class Unlock {
 		tv.setSchema(tok.getSchema());
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-			
-		ResponseEntity<Status> resp2;
+
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+				try {
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -209,7 +207,7 @@ public class Unlock {
 		try { Thread.sleep(schemaListConfig.getSchemaItemConfig(tok.getSchema()).getChannelConfig(tok.getChannel().toString()).getMaxValidityTime()*1000); } catch (InterruptedException | InvalidSchemaException e) { }
 		
 		try {
-			ResponseEntity<Status> resp3 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
 		} catch(HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 		}
@@ -243,12 +241,11 @@ public class Unlock {
 		
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-		
-		ResponseEntity<Status> resp2;	
+
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+				try {
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -266,23 +263,21 @@ public class Unlock {
 	    TokenInput tok4 = new TokenInput();
 		tok4.setUserIdentifier("uid_test");
 		tok4.setChannel(ChannelEnum.none);
-		
-	    ResponseEntity<Status> resp3;
 	    
 	    try {
-			resp3 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok2, headers), Status.class);
+			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok2, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 	    
 	    try {
-			resp3 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok3, headers), Status.class);
+			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok3, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 	    
 	    try {
-			resp3 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok4, headers), Status.class);
+			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok4, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -316,12 +311,11 @@ public class Unlock {
 
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-			
-		ResponseEntity<Status> resp2;	
+
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
 				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -331,7 +325,7 @@ public class Unlock {
 		tok.setUserIdentifier("fake_uid");
 
 		try {
-			ResponseEntity<Status> resp3 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -365,12 +359,11 @@ public class Unlock {
 
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-			
-		ResponseEntity<Status> resp2;	
+	
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+				try {
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -380,7 +373,7 @@ public class Unlock {
 		tok.setChannel(ChannelEnum.mail);
 				
 		try {
-			ResponseEntity<Status> resp3 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -414,12 +407,11 @@ public class Unlock {
 		
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-			
-		ResponseEntity<Status> resp2;	
+
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
 				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -429,7 +421,7 @@ public class Unlock {
 		tok.setSchema("fake_schema");
 		
 		try {
-			ResponseEntity<Status> resp3 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -453,7 +445,7 @@ public class Unlock {
 		HttpEntity<TokenInput> he = new HttpEntity<>(tok, headers);
 		
 		try {
-			ResponseEntity<Status> resp = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, he, Status.class);
+			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, he, Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}

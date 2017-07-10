@@ -151,12 +151,11 @@ public class Delete {
 		tv.setSchema(tok.getSchema());
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000000");
 		else tv.setCode("000000");
-		
-		ResponseEntity<Status> resp2;	
+	
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
 				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -230,23 +229,21 @@ public class Delete {
 		TokenInput tok4 = new TokenInput();
 		tok.setUserIdentifier("uid_test");
 		tok2.setChannel(ChannelEnum.none);
-		
-		ResponseEntity<NoBodyResponse> resp2;
-		
+
 		try {
-			resp2 = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok2,headers), NoBodyResponse.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok2,headers), NoBodyResponse.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
-			resp2 = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok3,headers), NoBodyResponse.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok3,headers), NoBodyResponse.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
-			resp2 = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok4,headers), NoBodyResponse.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok4,headers), NoBodyResponse.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -275,8 +272,8 @@ public class Delete {
 		
 		tok.setUserIdentifier("fake_uid");
 		
-		try{
-			ResponseEntity<NoBodyResponse> resp2 = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -307,8 +304,8 @@ public class Delete {
 		
 		tok.setChannel(ChannelEnum.sms);
 		
-		try{
-			ResponseEntity<NoBodyResponse> resp2 = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -337,8 +334,8 @@ public class Delete {
 		
 		tok.setSchema("fake_schema");
 		
-		try{
-			ResponseEntity<NoBodyResponse> resp2 = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -359,8 +356,8 @@ public class Delete {
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	 
-		try{
-			ResponseEntity<NoBodyResponse> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok, headers), NoBodyResponse.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok, headers), NoBodyResponse.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}

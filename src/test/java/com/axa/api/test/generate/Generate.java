@@ -122,7 +122,7 @@ public class Generate {
 	
 	private void startStubOpenAM(){
 		
-		OpenAMServer = new StubServer(new Integer(openAMConfig.getPort())).run();
+		OpenAMServer = new StubServer(Integer.parseInt(openAMConfig.getPort())).run();
 		
 		/** AuthenticateUser */
 		
@@ -1084,7 +1084,7 @@ public class Generate {
 	    tok.setUserIdentifier("uid_test");
 
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1101,7 +1101,7 @@ public class Generate {
 	    headers.add("Content-Type", "application/json");
 
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>("{\"userIdentifier\": \"uid_test\", \"channel\" : \"123456\", \"schema\" : \"schema_test-noscope\"}", headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>("{\"userIdentifier\": \"uid_test\", \"channel\" : \"123456\", \"schema\" : \"schema_test-noscope\"}", headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1130,19 +1130,19 @@ public class Generate {
 	    tok3.setChannel(ChannelEnum.none);
 
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok2, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok2, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok3, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok3, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1166,7 +1166,7 @@ public class Generate {
 	    tok.setPhone("phone_test");
 
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1188,7 +1188,7 @@ public class Generate {
 	    tok.setUserIdentifier("uid_test");
 
 	    try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1196,7 +1196,7 @@ public class Generate {
 	    tok.setChannel(ChannelEnum.sms);
 	    
 	    try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1204,7 +1204,7 @@ public class Generate {
 	    tok.setChannel(ChannelEnum.voice);
 	    
 	    try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1228,7 +1228,7 @@ public class Generate {
 	    tok.setPhone("phone_test");
 
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1250,7 +1250,7 @@ public class Generate {
 	    tok.setUserIdentifier("login_test_4");
 
 	    try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1258,7 +1258,7 @@ public class Generate {
 	    tok.setChannel(ChannelEnum.sms);
 	    
 	    try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1266,7 +1266,7 @@ public class Generate {
 	    tok.setChannel(ChannelEnum.voice);
 	    
 	    try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1301,12 +1301,11 @@ public class Generate {
 		
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-		
-		ResponseEntity<Status> resp2;
+
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
 				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){ 
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}	
@@ -1349,12 +1348,11 @@ public class Generate {
 			
 		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-			
-		ResponseEntity<Status> resp2;
+
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tok.getSchema()).getChannelConfig(tok.getChannel().toString()).getMaxSuccessfulAttempt() ; i++) {
 				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 				} catch(HttpClientErrorException ex){ 
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}	
@@ -1384,7 +1382,7 @@ public class Generate {
 	    tok.setSchema("schema_test-noscope");
 
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -1406,7 +1404,7 @@ public class Generate {
 	    tok.setSchema("schema_test_1");
 
 		try {
-			ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -1461,8 +1459,6 @@ public class Generate {
 	 */
 	@Test
 	public void should_500_soap() {
-		
-		ResponseEntity<Token> resp;
 		HttpHeaders headers = new HttpHeaders();
 	    headers.add("Content-Type", "application/json");
 	    
@@ -1474,14 +1470,14 @@ public class Generate {
 	    tok.setChannel(ChannelEnum.sms);
 	    
 	    try{
-	    	resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    	restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 	    } catch (HttpServerErrorException ex) {
 	    	assertEquals(ex.getStatusCode(), HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 		
 		tok.setChannel(ChannelEnum.voice);
 		try{
-	    	resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    	restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 	    } catch (HttpServerErrorException ex) {
 	    	assertEquals(ex.getStatusCode(), HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
@@ -1491,7 +1487,7 @@ public class Generate {
 		tok.setChannel(ChannelEnum.mail);
 		
 		try{
-	    	resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    	restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 	    } catch (HttpServerErrorException ex) {
 	    	assertEquals(ex.getStatusCode(), HttpStatus.INTERNAL_SERVER_ERROR);
 	    }

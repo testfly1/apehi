@@ -161,12 +161,11 @@ public class Validate {
 		else tv.setCode("000000");
 		
 		String code = resp.getBody().getToken();
-		
-		ResponseEntity<Status> resp2;
+
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt(); i++) {
-				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
+				try {
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -226,29 +225,27 @@ public class Validate {
 		tv4.setUserIdentifier(tok.getUserIdentifier());
 		tv4.setChannel(tok.getChannel());
 		tv4.setSchema(tok.getSchema());
-		
-		ResponseEntity<Status> resp2;
-			
-		try{
-			resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
-		try{
-			resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv2, headers), Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv2, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
-		try{
-			resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv3, headers), Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv3, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
-		try{
-			resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv4, headers), Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv4, headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}		
@@ -280,12 +277,12 @@ public class Validate {
 		tv.setChannel(tok.getChannel());
 		tv.setSchema(tok.getSchema());
 
-		if(resp.getBody().getToken().equals("000000")){
+		if (resp.getBody().getToken().equals("000000")){
 			tv.setCode("000001");
 		} else tv.setCode("000000");
 						
-		try{
-			ResponseEntity<Status> resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 		}	
@@ -316,14 +313,13 @@ public class Validate {
 		tv.setUserIdentifier(tok.getUserIdentifier());
 		tv.setChannel(tok.getChannel());
 		tv.setSchema(tok.getSchema());
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
+		if (resp.getBody().getToken().equals("000000")) tv.setCode("000001");
 		else tv.setCode("000000");
-		
-		ResponseEntity<Status> resp2;
+
 		try {
-			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt(); i++) {
-				try{
-					resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
+			for (int i = 0; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt(); i++) {
+				try {
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
 				} catch(HttpClientErrorException ex){
 					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 				}
@@ -332,8 +328,8 @@ public class Validate {
 			
 		tv.setCode(resp.getBody().getToken());
 		
-		try{
-			ResponseEntity<Status> resp3 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.FORBIDDEN);
 		}	
@@ -366,8 +362,8 @@ public class Validate {
 		tv.setSchema(tok.getSchema());
 		tv.setCode(resp.getBody().getToken());
 			
-		try{
-			ResponseEntity<Status> resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}	
@@ -400,8 +396,8 @@ public class Validate {
 		tv.setSchema(tok.getSchema());
 		tv.setCode(resp.getBody().getToken());
 			
-		try{
-			ResponseEntity<Status> resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}	
@@ -436,8 +432,8 @@ public class Validate {
 			
 		HttpEntity<TokenValidation> he2 = new HttpEntity<>(tv,headers);
 			
-		try{
-			ResponseEntity<Status> resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, he2, Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, he2, Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}	
@@ -471,16 +467,14 @@ public class Validate {
 		tv.setCode(resp.getBody().getToken());
 			
 		HttpEntity<TokenValidation> he2 = new HttpEntity<>(tv,headers);
-		
-		ResponseEntity<Status> resp2;
-		
+
 		try {
-			for(int i = 0; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxSuccessfulAttempt(); i++)
-				resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, he2, Status.class);
+			for (int i = 0; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxSuccessfulAttempt(); i++)
+				restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, he2, Status.class);
 		} catch (RestClientException | InvalidSchemaException e) { }
 			
-		try{
-			resp2 = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, he2, Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, he2, Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}	
@@ -502,8 +496,8 @@ public class Validate {
 		tv.setSchema("schema_test-noscope");
 		tv.setCode("000000");
 			
-		try{
-			ResponseEntity<Status> resp = restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
+		try {
+			restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv,headers), Status.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
