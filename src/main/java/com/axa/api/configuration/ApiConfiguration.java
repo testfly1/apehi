@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.axa.api.configuration.yml.LdapConfig;
 import com.axa.api.configuration.yml.SSLConfig;
+import com.axa.api.model.logging.EventLog;
 
 /**
  * Initialization of the components' values and context of the API
@@ -41,8 +42,7 @@ public class ApiConfiguration {
        try {
          return SecureRandom.getInstance("SHA1PRNG");
        } catch(Throwable e){     
-    	  // here should log if issues
-          e.printStackTrace();
+          ApiLogger.log.error("Error initializing SecureRandom for OTP generation.");	
           return null;
        }                           
     }
@@ -91,7 +91,7 @@ public class ApiConfiguration {
 				SSLContext.setDefault(context);
 			}
 			catch (Exception e) {
-				e.printStackTrace();
+				ApiLogger.log.error("Error initializing TrustManager for SSL bypass.");	
 			}
 		}
 		return null;

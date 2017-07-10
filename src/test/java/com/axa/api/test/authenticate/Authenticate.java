@@ -48,7 +48,7 @@ public class Authenticate {
 	
 	private void startStubOAM(){
 		
-		OpenAMServer = new StubServer(new Integer(openAMConfig.getPort())).run();
+		OpenAMServer = new StubServer(Integer.parseInt(openAMConfig.getPort())).run();
 		
 		/*
 		 * AuthenticateUser
@@ -299,19 +299,19 @@ public class Authenticate {
 	      
 	    
 		try {
-			ResponseEntity<User> resp = restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput, headers), User.class);
+			restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput, headers), User.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
-			ResponseEntity<User> resp = restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput2, headers), User.class);
+			restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput2, headers), User.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
-			ResponseEntity<User> resp = restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput3, headers), User.class);
+			restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput3, headers), User.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -333,7 +333,7 @@ public class Authenticate {
 	    userInput.setSchema("fake_schema");
 	      
 		try {
-			ResponseEntity<User> resp = restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput, headers), User.class);
+			restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput, headers), User.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -355,7 +355,7 @@ public class Authenticate {
 	    userInput.setSchema("schema_test_1");
 	    
 		try {
-			ResponseEntity<User> resp = restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput, headers), User.class);
+			restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput, headers), User.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 		}
@@ -377,7 +377,7 @@ public class Authenticate {
 	    userInput.setSchema("schema_test_1");
 	    
 		try {
-			ResponseEntity<User> resp = restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput, headers), User.class);
+			restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, new HttpEntity<>(userInput, headers), User.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
 		}
@@ -401,7 +401,7 @@ public class Authenticate {
 	    HttpEntity<UserInput> he = new HttpEntity<>(userInput, headers);
 	   
 	    try {
-	    	ResponseEntity<User> resp = restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, he, User.class);
+	    	restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, he, User.class);
 	    } catch (HttpServerErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -425,7 +425,7 @@ public class Authenticate {
 	    HttpEntity<UserInput> he = new HttpEntity<>(userInput, headers);
 	   
 	    try {
-	    	ResponseEntity<User> resp = restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, he, User.class);
+	    	restTemplate.exchange("http://localhost:8080/authenticate", HttpMethod.POST, he, User.class);
 	    } catch (HttpServerErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
