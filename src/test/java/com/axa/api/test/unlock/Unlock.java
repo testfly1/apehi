@@ -2,6 +2,7 @@ package com.axa.api.test.unlock;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.After;
 import org.junit.Before;
@@ -94,35 +95,39 @@ public class Unlock {
 	public void stop() {
 		LDAPServer.shutDown(true);
 	}
-
-	/*
-	 *  Unlock locked token
-	 *  expected OK 200
-	 */
-	@Test
-	public void should_200_unlock_token_1() {
+	
+	public ResponseEntity<Token> createToken(TokenInput tok){
 		
 		HttpHeaders headers = new HttpHeaders();
 	    headers.add("Content-Type", "application/json");
 	    
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
-
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
+	    if(tok.getChannel()==ChannelEnum.none){
+	    	assertEquals(resp.getStatusCode(), HttpStatus.OK);
+	    	assertNotNull(resp.getBody().getToken());
+	    	assertEquals(resp.getBody().getToken().length(), 6);
+	    } else {
+	    	assertEquals(resp.getStatusCode(), HttpStatus.OK);
+			assertNull(resp.getBody().getToken());
+			assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
+			assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
+	    }
+		
+		return resp;
+	}
+
+	private void lockToken(TokenInput tok){
 		
 		TokenValidation tv = new TokenValidation();
 		tv.setUserIdentifier(tok.getUserIdentifier());
 		tv.setChannel(tok.getChannel());
 		tv.setSchema(tok.getSchema());
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
-		else tv.setCode("000000");
-
+		tv.setCode("wrong code");
+		
+		HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Type", "application/json");
+		
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
 				try{
@@ -132,11 +137,36 @@ public class Unlock {
 				}
 			}
 		} catch (RestClientException | InvalidSchemaException e) { }
+	}
 	
-		ResponseEntity<Status> resp3 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+	private void unlockToken(TokenInput tok){
 		
-		assertEquals(resp3.getStatusCode(), HttpStatus.OK);
-		assertEquals(resp3.getBody().getCode(), HttpStatus.OK.value());
+		HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Type", "application/json");
+		
+		ResponseEntity<Status> resp = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+		
+		assertEquals(resp.getStatusCode(), HttpStatus.OK);
+		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
+	}
+	
+	/*
+	 *  Unlock locked token
+	 *  expected OK 200
+	 */
+	@Test
+	public void should_200_unlock_token_1() {
+		
+	    TokenInput tok = new TokenInput();
+	    tok.setUserIdentifier("uid_test");
+	    tok.setChannel(ChannelEnum.none);
+	    tok.setSchema("schema_test-noscope");
+
+		createToken(tok);
+		
+		lockToken(tok);
+	
+		unlockToken(tok);
 	}
 	
 	/*
@@ -146,24 +176,14 @@ public class Unlock {
 	@Test
 	public void should_200_unlock_token_2() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
-	    ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    createToken(tok);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		ResponseEntity<Status> resp2 = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
-		
-		assertEquals(resp2.getStatusCode(), HttpStatus.OK);
-		assertEquals(resp2.getBody().getCode(), HttpStatus.OK.value());
+		unlockToken(tok);
 	}
 	
 	/*
@@ -173,44 +193,18 @@ public class Unlock {
 	@Test
 	public void should_200_unlock_token_3() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+		createToken(tok);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		TokenValidation tv = new TokenValidation();
-		tv.setUserIdentifier(tok.getUserIdentifier());
-		tv.setChannel(tok.getChannel());
-		tv.setSchema(tok.getSchema());
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
-		else tv.setCode("000000");
-
-		try {
-			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try {
-					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
-				} catch(HttpClientErrorException ex){
-					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
-				}
-			}
-		} catch (RestClientException | InvalidSchemaException e) { }
+		lockToken(tok);
 	
 		try { Thread.sleep(schemaListConfig.getSchemaItemConfig(tok.getSchema()).getChannelConfig(tok.getChannel().toString()).getMaxValidityTime()*1000); } catch (InterruptedException | InvalidSchemaException e) { }
 		
-		try {
-			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
-		} catch(HttpClientErrorException ex) {
-			assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
-		}
+		unlockToken(tok);
 	}
 
 	/*
@@ -220,37 +214,14 @@ public class Unlock {
 	@Test
 	public void should_400_unlock_token() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+		createToken(tok);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		TokenValidation tv = new TokenValidation();
-		tv.setUserIdentifier(tok.getUserIdentifier());
-		tv.setChannel(tok.getChannel());
-		tv.setSchema(tok.getSchema());
-		
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
-		else tv.setCode("000000");
-
-		try {
-			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try {
-					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
-				} catch(HttpClientErrorException ex){
-					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
-				}
-			}
-		} catch (RestClientException | InvalidSchemaException e) { }
+		lockToken(tok);
 		
 		TokenInput tok2 = new TokenInput();
 		tok2.setChannel(ChannelEnum.none);
@@ -264,20 +235,20 @@ public class Unlock {
 		tok4.setUserIdentifier("uid_test");
 		tok4.setChannel(ChannelEnum.none);
 	    
-	    try {
-			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok2, headers), Status.class);
+		try{
+			unlockToken(tok2);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
-	    
-	    try {
-			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok3, headers), Status.class);
+		
+		try{
+			unlockToken(tok3);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
-	    
-	    try {
-			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok4, headers), Status.class);
+		
+		try{
+			unlockToken(tok4);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -289,43 +260,20 @@ public class Unlock {
 	 */
 	@Test
 	public void should_404_unlock_token_1() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
 	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
-	    ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    createToken(tok);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		TokenValidation tv = new TokenValidation();
-		tv.setUserIdentifier(tok.getUserIdentifier());
-		tv.setChannel(tok.getChannel());
-		tv.setSchema(tok.getSchema());
-
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
-		else tv.setCode("000000");
-
-		try {
-			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try{
-					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
-				} catch(HttpClientErrorException ex){
-					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
-				}
-			}
-		} catch (RestClientException | InvalidSchemaException e) { }
+		lockToken(tok);
 		
 		tok.setUserIdentifier("fake_uid");
 
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+			unlockToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -338,42 +286,19 @@ public class Unlock {
 	@Test
 	public void should_404_unlock_token_2() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
-	    ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    createToken(tok);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		TokenValidation tv = new TokenValidation();
-		tv.setUserIdentifier(tok.getUserIdentifier());
-		tv.setChannel(tok.getChannel());
-		tv.setSchema(tok.getSchema());
-
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
-		else tv.setCode("000000");
-	
-		try {
-			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try {
-					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
-				} catch(HttpClientErrorException ex){
-					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
-				}
-			}
-		} catch (RestClientException | InvalidSchemaException e) { }
+		lockToken(tok);
 		
 		tok.setChannel(ChannelEnum.mail);
 				
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+			unlockToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -386,42 +311,19 @@ public class Unlock {
 	@Test
 	public void should_404_unlock_token_3() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
-	    ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		TokenValidation tv = new TokenValidation();
-		tv.setUserIdentifier(tok.getUserIdentifier());
-		tv.setChannel(tok.getChannel());
-		tv.setSchema(tok.getSchema());
-		
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
-		else tv.setCode("000000");
-
-		try {
-			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try{
-					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
-				} catch(HttpClientErrorException ex){
-					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
-				}
-			}
-		} catch (RestClientException | InvalidSchemaException e) { }
+	    createToken(tok);
+	    
+	    lockToken(tok);
 		
 		tok.setSchema("fake_schema");
 		
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
+			unlockToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -433,19 +335,14 @@ public class Unlock {
 	 */
 	@Test
 	public void should_404_unlock_token_4() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
+			    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
-		HttpEntity<TokenInput> he = new HttpEntity<>(tok, headers);
-		
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, he, Status.class);
+			unlockToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}

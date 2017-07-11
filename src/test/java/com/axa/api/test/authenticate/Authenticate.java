@@ -43,10 +43,10 @@ public class Authenticate {
 	
 	@Before
 	public void start(){
-		startStubOAM();
+		startStubOpenAM();
 	}
 	
-	private void startStubOAM(){
+	private void startStubOpenAM(){
 		
 		OpenAMServer = new StubServer(Integer.parseInt(openAMConfig.getPort())).run();
 		

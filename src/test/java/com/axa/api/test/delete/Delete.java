@@ -97,61 +97,38 @@ public class Delete {
 		LDAPServer.shutDown(true);
 	}
 	
-	/*
-	 *  Delete existing token
-	 *  expected OK 200
-	 */
-	@Test
-	public void should_200_delete_token_1() {
+	private ResponseEntity<Token> createToken(TokenInput tok){
 		
 		HttpHeaders headers = new HttpHeaders();
 	    headers.add("Content-Type", "application/json");
 	    
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
-
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
+	    if(tok.getChannel()==ChannelEnum.none){
+	    	assertEquals(resp.getStatusCode(), HttpStatus.OK);
+	    	assertNotNull(resp.getBody().getToken());
+	    	assertEquals(resp.getBody().getToken().length(), 6);
+	    } else {
+	    	assertEquals(resp.getStatusCode(), HttpStatus.OK);
+			assertNull(resp.getBody().getToken());
+			assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
+			assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
+	    }
 		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.NO_CONTENT);
-		assertNull(resp.getBody());
+		return resp;
 	}
 	
-	/*
-	 *  Delete existing locked token
-	 *  expected OK 200
-	 */
-	@Test
-	public void should_200_delete_token_2() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
-
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
+	private void lockToken(TokenInput tok){
 		
 		TokenValidation tv = new TokenValidation();
 		tv.setUserIdentifier(tok.getUserIdentifier());
 		tv.setChannel(tok.getChannel());
 		tv.setSchema(tok.getSchema());
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000000");
-		else tv.setCode("000000");
-	
+		tv.setCode("wrong code");
+		
+		HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Type", "application/json");
+		
 		try {
 			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
 				try{
@@ -161,11 +138,55 @@ public class Delete {
 				}
 			}
 		} catch (RestClientException | InvalidSchemaException e) { }
+	}
+	
+	
+	private void deleteToken(TokenInput tok){
 		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok, headers), Token.class);
-		
+		HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Type", "application/json");
+
+		ResponseEntity<NoBodyResponse> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok, headers), NoBodyResponse.class);
 		assertEquals(resp.getStatusCode(), HttpStatus.NO_CONTENT);
 		assertNull(resp.getBody());
+	}
+	
+	/*
+	 *  Delete existing token
+	 *  expected OK 200
+	 */
+	@Test
+	public void should_200_delete_token_1() {
+	    
+	    TokenInput tok = new TokenInput();
+	    tok.setUserIdentifier("uid_test");
+	    tok.setChannel(ChannelEnum.none);
+	    tok.setSchema("schema_test-noscope");
+	    
+	    createToken(tok);
+	    
+	    deleteToken(tok);
+	}
+	
+	/*
+	 *  Delete existing locked token
+	 *  expected OK 200
+	 */
+	@Test
+	public void should_200_delete_token_2() {
+		
+		
+		
+		TokenInput tok = new TokenInput();
+		tok.setUserIdentifier("uid_test");
+		tok.setChannel(ChannelEnum.none);
+		tok.setSchema("schema_test-noscope");
+		
+		createToken(tok);
+		
+		lockToken(tok);
+		
+		deleteToken(tok);
 	}
 	
 	/*
@@ -175,26 +196,18 @@ public class Delete {
 	@Test
 	public void should_200_delete_token_3() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
+		
 	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
-
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
+	    
+	    createToken(tok);
+	    
 		try { Thread.sleep(schemaListConfig.getSchemaItemConfig(tok.getSchema()).getChannelConfig(tok.getChannel().toString()).getMaxValidityTime()*1000); } catch (InterruptedException | InvalidSchemaException e) { }
 		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.NO_CONTENT);
-		assertNull(resp.getBody());
+		deleteToken(tok);
 	}
 	
 	/*
@@ -203,47 +216,40 @@ public class Delete {
 	 */
 	@Test
 	public void should_400_delete_token() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
 
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
+		TokenInput tok1 = new TokenInput();
+		tok1.setChannel(ChannelEnum.none);
+		tok1.setSchema("schema_test-noscope");
 		
 		TokenInput tok2 = new TokenInput();
-		tok2.setChannel(ChannelEnum.none);
+		tok2.setUserIdentifier("uid_test");
 		tok2.setSchema("schema_test-noscope");
 		
 		TokenInput tok3 = new TokenInput();
-		tok.setUserIdentifier("uid_test");
-		tok2.setSchema("schema_test-noscope");
+		tok3.setUserIdentifier("uid_test");
+		tok3.setChannel(ChannelEnum.none);
 		
-		TokenInput tok4 = new TokenInput();
-		tok.setUserIdentifier("uid_test");
-		tok2.setChannel(ChannelEnum.none);
+		TokenInput tok_test = new TokenInput();
+		tok_test.setUserIdentifier("uid_test");
+		tok_test.setChannel(ChannelEnum.none);
+		tok_test.setSchema("schema_test-noscope");
 
+		createToken(tok_test);
+		
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok2,headers), NoBodyResponse.class);
+			deleteToken(tok1);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok3,headers), NoBodyResponse.class);
+			deleteToken(tok2);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok4,headers), NoBodyResponse.class);
+			deleteToken(tok3);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -256,24 +262,20 @@ public class Delete {
 	@Test
 	public void should_404_delete_token_1() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
 	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
+	    tok.setUserIdentifier("fake_uid");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		tok.setUserIdentifier("fake_uid");
-		
+	    TokenInput tok_test = new TokenInput();
+		tok_test.setUserIdentifier("uid_test");
+		tok_test.setChannel(ChannelEnum.none);
+		tok_test.setSchema("schema_test-noscope");
+	    
+	    createToken(tok_test);
+	    
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
+			deleteToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -285,27 +287,21 @@ public class Delete {
 	 */
 	@Test
 	public void should_404_delete_token_2() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
 	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
-	    tok.setChannel(ChannelEnum.none);
+	    tok.setChannel(ChannelEnum.sms);
 	    tok.setSchema("schema_test-noscope");
 	    
-		HttpEntity<TokenInput> he = new HttpEntity<>(tok, headers);
-
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, he, Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		tok.setChannel(ChannelEnum.sms);
-		
+	    TokenInput tok_test = new TokenInput();
+		tok_test.setUserIdentifier("uid_test");
+		tok_test.setChannel(ChannelEnum.none);
+		tok_test.setSchema("schema_test-noscope");
+	    
+	    createToken(tok_test);
+	    
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
+			deleteToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -317,25 +313,21 @@ public class Delete {
 	 */
 	@Test
 	public void should_404_delete_token_3() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
 	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
-	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
 		tok.setSchema("fake_schema");
 		
+		TokenInput tok_test = new TokenInput();
+		tok_test.setUserIdentifier("uid_test");
+		tok_test.setChannel(ChannelEnum.none);
+		tok_test.setSchema("schema_test-noscope");
+	    
+	    createToken(tok_test);
+	    
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok,headers), NoBodyResponse.class);
+			deleteToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
@@ -348,16 +340,16 @@ public class Delete {
 	@Test
 	public void should_404_delete_token_4() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
-	    TokenInput tok = new TokenInput();
+		TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	 
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Type", "application/json");
+	    
 		try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok, headers), NoBodyResponse.class);
+			deleteToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}

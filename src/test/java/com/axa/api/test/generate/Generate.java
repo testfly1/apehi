@@ -556,6 +556,49 @@ public class Generate {
 		SOAPServer.stop();
 	}
 	
+	public ResponseEntity<Token> createToken(TokenInput tok){
+		
+		HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Type", "application/json");
+	    
+	    ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+		
+	    if(tok.getChannel()==ChannelEnum.none){
+	    	assertEquals(resp.getStatusCode(), HttpStatus.OK);
+	    	assertNotNull(resp.getBody().getToken());
+	    	assertEquals(resp.getBody().getToken().length(), 6);
+	    } else {
+	    	assertEquals(resp.getStatusCode(), HttpStatus.OK);
+			assertNull(resp.getBody().getToken());
+			assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
+			assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
+	    }
+		
+		return resp;
+	}
+	
+	private void lockToken(TokenInput tok){
+		
+		TokenValidation tv = new TokenValidation();
+		tv.setUserIdentifier(tok.getUserIdentifier());
+		tv.setChannel(tok.getChannel());
+		tv.setSchema(tok.getSchema());
+		tv.setCode("wrong code");
+		
+		HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Type", "application/json");
+		
+		try {
+			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
+				try{
+					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
+				} catch(HttpClientErrorException ex){
+					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
+				}
+			}
+		} catch (RestClientException | InvalidSchemaException e) { }
+	}
+	
 	/*
 	 *  Generate token for non-existing user
 	 *  expected OK 200 
@@ -563,19 +606,12 @@ public class Generate {
 	@Test
 	public void should_200_generate_token_unregistered_1() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
 	    TokenInput tok = new TokenInput();
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    tok.setUserIdentifier("uid_test");
 	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
+	    createToken(tok);
 	}
 	
 	/*
@@ -584,9 +620,6 @@ public class Generate {
 	 */
 	@Test
 	public void should_200_generate_token_unregistered_2() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
 	    
 	    TokenInput tok = new TokenInput();
 	    tok.setChannel(ChannelEnum.none);
@@ -594,18 +627,12 @@ public class Generate {
 	    tok.setUserIdentifier("uid_test");
 	    tok.setMail("mail_test");
 		
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
 		
-		String code1 = resp.getBody().getToken();
+		String code1 = createToken(tok).getBody().getToken();
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
+		String code2 = createToken(tok).getBody().getToken();
 		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertNotEquals(resp.getBody().getToken(), code1);
+		assertNotEquals(code1, code2);
 	}
 	
 	/*
@@ -641,32 +668,11 @@ public class Generate {
 	    tok4.setSchema("schema_test-noscope");
 	    tok4.setUserIdentifier("uid_test");
 	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok1, headers), Token.class);
-	
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
+		createToken(tok1);
+		createToken(tok2);
+		createToken(tok3);
+		createToken(tok4);
 		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok2, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok3, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok4, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
 	}
 	
 	/*
@@ -676,19 +682,12 @@ public class Generate {
 	@Test
 	public void should_200_generate_token_registered_1() {
 			
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Content-Type", "application/json");
-		   
 		TokenInput tok = new TokenInput();
 		tok.setChannel(ChannelEnum.none);
 		tok.setSchema("schema_test_1");
 		tok.setUserIdentifier("login_test_1");
 		    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-			
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
+		createToken(tok);
 	}
 		
 	/*
@@ -697,9 +696,6 @@ public class Generate {
 	*/
 	@Test
 	public void should_200_generate_token_registered_2() {
-			
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Content-Type", "application/json");
 		    
 		TokenInput tok = new TokenInput();
 		tok.setChannel(ChannelEnum.none);
@@ -707,18 +703,11 @@ public class Generate {
 		tok.setUserIdentifier("login_test_1");
 
 			
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-			
-		String code1 = resp.getBody().getToken();
-			
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-			
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-			
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());		
-		assertNotEquals(resp.getBody().getToken(), code1);
+		String code1 = createToken(tok).getBody().getToken();
+		
+		String code2 = createToken(tok).getBody().getToken();
+		
+		assertNotEquals(code1, code2);
 	}
 	
 	/*
@@ -728,49 +717,36 @@ public class Generate {
 	@Test
 	public void should_200_generate_token_registered_3() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
+	    TokenInput tok1 = new TokenInput();
+	    tok1.setUserIdentifier("login_test_1");
+	    tok1.setChannel(ChannelEnum.none);
+	    tok1.setSchema("schema_test_1");
 	    
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("login_test_1");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test_1");
-	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+	    TokenInput tok2 = new TokenInput();
+		tok2.setUserIdentifier("login_test_1");
+		tok2.setChannel(ChannelEnum.mail);
+		tok2.setMail("mail_test");
+		tok2.setSchema("schema_test_1");
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
+		TokenInput tok3 = new TokenInput();
+		tok3.setUserIdentifier("login_test_1");
+		tok3.setChannel(ChannelEnum.sms);
+		tok3.setPhone("phone_test");
+		tok3.setSchema("schema_test_1");
 		
-		tok.setChannel(ChannelEnum.mail);
-		tok.setMail("mail_test");
+		TokenInput tok4 = new TokenInput();
+		tok4.setUserIdentifier("login_test_1");
+		tok4.setChannel(ChannelEnum.voice);
+		tok4.setPhone("phone_test");
+		tok4.setSchema("schema_test_1");
 		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+		createToken(tok1);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
+		createToken(tok2);
 		
-		tok.setMail(null);
-		tok.setPhone("test_phone");
-		tok.setChannel(ChannelEnum.sms);
+		createToken(tok3);
 		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.voice);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
+		createToken(tok4);
 	}
 	
 	/*
@@ -780,46 +756,33 @@ public class Generate {
 	@Test
 	public void should_200_generate_token_registered_4() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
+	    TokenInput tok1 = new TokenInput();
+	    tok1.setUserIdentifier("login_test_1");
+	    tok1.setChannel(ChannelEnum.none);
+	    tok1.setSchema("schema_test_1");
 	    
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("login_test_1");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test_1");
+	    TokenInput tok2 = new TokenInput();
+	    tok2.setUserIdentifier("login_test_1");
+	    tok2.setChannel(ChannelEnum.mail);
+	    tok2.setSchema("schema_test_1");
+		
+	    TokenInput tok3 = new TokenInput();
+	    tok3.setUserIdentifier("login_test_1");
+	    tok3.setChannel(ChannelEnum.sms);
+	    tok3.setSchema("schema_test_1");
 	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		tok.setChannel(ChannelEnum.mail);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.sms);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.voice);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
+	    TokenInput tok4 = new TokenInput();
+	    tok4.setUserIdentifier("login_test_1");
+	    tok4.setChannel(ChannelEnum.voice);
+	    tok4.setSchema("schema_test_1");
+	    
+	    createToken(tok1);
+	    
+	    createToken(tok2);
+	    
+	    createToken(tok3);
+	    
+	    createToken(tok4);
 	}
 	
 	/*
@@ -828,9 +791,6 @@ public class Generate {
 	 */
 	@Test
 	public void should_200_generate_token_registered_5() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
 	    
 	    TokenInput tok1 = new TokenInput();
 	    tok1.setUserIdentifier("login_test_4");
@@ -855,32 +815,13 @@ public class Generate {
 	    tok4.setPhone("phone_test");
 	    tok4.setSchema("schema_test_1");
 	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok1, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok2, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok3, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok4, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
+	    createToken(tok1);
+	    
+	    createToken(tok2);
+	    
+	    createToken(tok3);
+	    
+	    createToken(tok4);
 	}
 	
 	/*
@@ -890,183 +831,63 @@ public class Generate {
 	@Test
 	public void should_200_generate_token_registered_6() {
 		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
+		TokenInput tok1 = new TokenInput();
+	    tok1.setUserIdentifier("login_test_1");
+	    tok1.setChannel(ChannelEnum.none);
+	    tok1.setSchema("schema_test_1");
 	    
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("login_test_1");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test_1");
+	    TokenInput tok2 = new TokenInput();
+	    tok2.setUserIdentifier("login_test_1");
+	    tok2.setChannel(ChannelEnum.mail);
+	    tok2.setSchema("schema_test_1");
 	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		String code1 = resp.getBody().getToken();
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		tok.setChannel(ChannelEnum.mail);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.sms);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.voice);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test_2");
+	    TokenInput tok3 = new TokenInput();
+	    tok3.setUserIdentifier("login_test_1");
+	    tok3.setChannel(ChannelEnum.sms);
+	    tok3.setSchema("schema_test_1");
 	    
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		String code2 = resp.getBody().getToken();
-		assertNotEquals(code1, code2);
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		tok.setChannel(ChannelEnum.mail);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.sms);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.voice);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
+	    TokenInput tok4 = new TokenInput();
+	    tok4.setUserIdentifier("login_test_1");
+	    tok4.setChannel(ChannelEnum.voice);
+	    tok4.setSchema("schema_test_1");
+	    
+	    TokenInput tok5 = new TokenInput();
+	    tok5.setUserIdentifier("login_test_1");
+	    tok5.setChannel(ChannelEnum.none);
+	    tok5.setSchema("schema_test_2");
+	    
+	    TokenInput tok6 = new TokenInput();
+	    tok6.setUserIdentifier("login_test_1");
+	    tok6.setChannel(ChannelEnum.mail);
+	    tok6.setSchema("schema_test_2");
+	    
+	    TokenInput tok7 = new TokenInput();
+	    tok7.setUserIdentifier("login_test_1");
+	    tok7.setChannel(ChannelEnum.sms);
+	    tok7.setSchema("schema_test_2");
+	    
+	    TokenInput tok8 = new TokenInput();
+	    tok8.setUserIdentifier("login_test_1");
+	    tok8.setChannel(ChannelEnum.voice);
+	    tok8.setSchema("schema_test_2");
+	    
+	    createToken(tok1);
+	    
+	    createToken(tok2);
+	    
+	    createToken(tok3);
+	    
+	    createToken(tok4);
+	    
+	    createToken(tok5);
+	    
+	    createToken(tok6);
+	    
+	    createToken(tok7);
+	    
+	    createToken(tok8);
 	}
 	
-	/*
-	 *  Generate 8 different tokens for existing user without channel informations inputs
-	 *  expected OK 200
-	 */
-	@Test
-	public void should_200_generate_token_registered_7() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
-	    
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("login_test_4");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test_1");
-	    
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		String code1 = resp.getBody().getToken();
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		tok.setMail("mail_test");
-		tok.setChannel(ChannelEnum.mail);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setMail(null);
-		tok.setPhone("phone_test");
-		tok.setChannel(ChannelEnum.sms);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.voice);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setPhone(null);
-		tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test_2");
-	    
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		String code2 = resp.getBody().getToken();
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody().getToken());
-		assertNotEquals(code1, code2);
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		tok.setMail("mail_test");
-		tok.setChannel(ChannelEnum.mail);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setMail(null);
-		tok.setPhone("phone_test");
-		tok.setChannel(ChannelEnum.sms);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-		
-		tok.setChannel(ChannelEnum.voice);
-		
-		resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-		assertEquals(resp.getBody().getMessage(), "OTP generated & sent through desired channel");
-	}
 	
 	/*
 	 *  Generate token for non-existing schema
@@ -1182,29 +1003,35 @@ public class Generate {
 		HttpHeaders headers = new HttpHeaders();
 	    headers.add("Content-Type", "application/json");
 	    
-	    TokenInput tok = new TokenInput();
-	    tok.setChannel(ChannelEnum.mail);
-	    tok.setSchema("schema_test-noscope");
-	    tok.setUserIdentifier("uid_test");
+	    TokenInput tok1 = new TokenInput();
+	    tok1.setChannel(ChannelEnum.mail);
+	    tok1.setSchema("schema_test-noscope");
+	    tok1.setUserIdentifier("uid_test");
+	    
+	    TokenInput tok2 = new TokenInput();
+	    tok2.setChannel(ChannelEnum.sms);
+	    tok2.setSchema("schema_test-noscope");
+	    tok2.setUserIdentifier("uid_test");
+	    
+	    TokenInput tok3 = new TokenInput();
+	    tok3.setChannel(ChannelEnum.voice);
+	    tok3.setSchema("schema_test-noscope");
+	    tok3.setUserIdentifier("uid_test");
 
 	    try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok1, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 	    
-	    tok.setChannel(ChannelEnum.sms);
-	    
 	    try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok2, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 	    
-	    tok.setChannel(ChannelEnum.voice);
-	    
 	    try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok3, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1244,29 +1071,35 @@ public class Generate {
 		HttpHeaders headers = new HttpHeaders();
 	    headers.add("Content-Type", "application/json");
 		    
-	    TokenInput tok = new TokenInput();
-	    tok.setChannel(ChannelEnum.mail);
-	    tok.setSchema("schema_test_1");
-	    tok.setUserIdentifier("login_test_4");
+	    TokenInput tok1 = new TokenInput();
+	    tok1.setChannel(ChannelEnum.mail);
+	    tok1.setSchema("schema_test_1");
+	    tok1.setUserIdentifier("login_test_4");
+	    
+	    TokenInput tok2 = new TokenInput();
+	    tok2.setChannel(ChannelEnum.sms);
+	    tok2.setSchema("schema_test_1");
+	    tok2.setUserIdentifier("login_test_4");
+	    
+	    TokenInput tok3 = new TokenInput();
+	    tok3.setChannel(ChannelEnum.voice);
+	    tok3.setSchema("schema_test_1");
+	    tok3.setUserIdentifier("login_test_4");
 
 	    try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok1, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 	    
-	    tok.setChannel(ChannelEnum.sms);
-	    
 	    try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok2, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 	    
-	    tok.setChannel(ChannelEnum.voice);
-	    
 	    try {
-			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+			restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok3, headers), Token.class);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
@@ -1278,43 +1111,19 @@ public class Generate {
 	 */
 	@Test
 	public void should_403_generate_token_unregistered() {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.add("Content-Type", "application/json");
 	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 
-		ResponseEntity<Token> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
+		createToken(tok);
 		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertNotNull(resp.getBody());
-		assertNotNull(resp.getBody().getToken());
-		assertEquals(resp.getBody().getToken().length(), 6);
-		
-		TokenValidation tv = new TokenValidation();
-		tv.setUserIdentifier(tok.getUserIdentifier());
-		tv.setChannel(tok.getChannel());
-		tv.setSchema(tok.getSchema());
-		
-		if(resp.getBody().getToken().equals("000000")) tv.setCode("000001");
-		else tv.setCode("000000");
-
-		try {
-			for(int i = 0 ; i < schemaListConfig.getSchemaItemConfig(tv.getSchema()).getChannelConfig(tv.getChannel().toString()).getMaxFailedAttempt() ; i++) {
-				try{
-					restTemplate.exchange("http://localhost:8080/tokens/validate", HttpMethod.POST, new HttpEntity<>(tv, headers), Status.class);
-				} catch(HttpClientErrorException ex){ 
-					assertEquals(ex.getStatusCode(), HttpStatus.UNAUTHORIZED);
-				}	
-			}
-		} catch (RestClientException | InvalidSchemaException e) { }		
+		lockToken(tok);		
 		
 		try {
-			resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.POST, new HttpEntity<>(tok, headers), Token.class);
-		} catch (HttpClientErrorException ex) {
+			createToken(tok);
+			} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.FORBIDDEN);
 		}
 	}
