@@ -34,7 +34,7 @@ public class SwaggerConfig {
     	return new ApiInfoBuilder()
     			.title("AXA IAM Token Management API")
     			.description("RESTful API Service to manage the lifecycle of short-lived and long-lived tokens delivered to end-users.\n\nCurrent available schemas :\n\n - \"myAxaCh\" linked to \"AXA-CH-B2C\" scope\n\n- \"myAxaCh-noscope\" not linked to any scope")
-    			.version("1.4.3")
+    			.version("1.4.4")
     			.build();
     }
 }

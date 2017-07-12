@@ -28,12 +28,12 @@ soap:
   port: 8443
   ssl: false
   deploymentPath: ATS_MessageService
-  application: QA
-  organization: IAM_SUPPORT
+  application: application_test
+  organization: organization_test
   login: login_test
   password: password_test
-  bypassSendingToken: true
-  bypassAuthorization: true
+  bypassSendingToken: false
+  bypassAuthorization: false
           
 schemas:
     schema_test_1:
