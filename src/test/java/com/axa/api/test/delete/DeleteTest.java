@@ -39,7 +39,7 @@ import com.unboundid.ldif.LDIFException;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-public class Delete {
+public class DeleteTest {
 
 	@Autowired
 	RestTemplate restTemplate;

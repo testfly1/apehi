@@ -52,7 +52,7 @@ import com.xebialabs.restito.server.StubServer;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-public class Get {
+public class GetTest {
 	
 	@Autowired
 	RestTemplate restTemplate;

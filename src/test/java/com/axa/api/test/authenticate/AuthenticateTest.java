@@ -31,7 +31,7 @@ import com.xebialabs.restito.server.StubServer;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-public class Authenticate {
+public class AuthenticateTest {
 	
 	@Autowired
 	RestTemplate restTemplate;

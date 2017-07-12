@@ -5,7 +5,7 @@
 
     <groupId>com.axatech.authentication</groupId>
     <artifactId>openam-frontend-api</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.4</version>
 	  <packaging>war</packaging>
 	
     <parent>
