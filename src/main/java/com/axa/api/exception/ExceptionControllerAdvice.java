@@ -25,35 +25,6 @@ import com.axa.api.model.enumeration.ApiEvent;
 @ControllerAdvice
 public class ExceptionControllerAdvice {
 	
-	/*
-	 * Does not work because InputStream is closed (already read by Spring ?)
-	 
-	 private Object getInputBody(HttpServletRequest hsr) {
-	 
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			switch (hsr.getRequestURI()) {
-				case "/tokens":
-					if (hsr.getMethod().equals("GET"))
-						return new MinimalTokenInputLogging(hsr.getParameter("userIdentifier"), hsr.getParameter("channel"), hsr.getParameter("schema"));
-				default:
-					String str = mapper.readValue(hsr.getInputStream(), String.class);
-					JSONObject jo = new JSONObject(str);
-					if (jo.has("password"))
-						jo.remove("password");
-					return jo;
-			}
-		} catch (JsonParseException e) {
-			return null;
-		} catch (JsonMappingException e) {
-			return null;
-		} catch (IOException e) {
-			return null;
-		} catch (JSONException e) {
-			return null;
-		}
-	} */
-	
 	/**
 	 * Generation of an ErrorLog
 	 * @param status
@@ -121,8 +92,6 @@ public class ExceptionControllerAdvice {
 		msg.setCode(HttpStatus.NOT_FOUND.value());
 		msg.setMessage(new String[] { "token could not be found" });
 		
-		//generateErrorLog(HttpStatus.BAD_REQUEST, msg);
-		
 		return new ResponseEntity<Error>(msg, HttpStatus.NOT_FOUND);
 	}
 
@@ -131,9 +100,7 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.FORBIDDEN.value());
 		msg.setMessage(new String[] { "token is locked" });
-		
-		//generateErrorLog(HttpStatus.FORBIDDEN, msg);
-		
+
 		return new ResponseEntity<Error>(msg, HttpStatus.FORBIDDEN);
 	}
 	
@@ -142,9 +109,7 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.UNAUTHORIZED.value());
 		msg.setMessage(new String[] { "authentication failed" });
-		
-		//generateErrorLog(HttpStatus.UNAUTHORIZED, msg);
-		
+
 		return new ResponseEntity<Error>(msg, HttpStatus.UNAUTHORIZED);
 	}
 	
@@ -153,9 +118,7 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.UNAUTHORIZED.value());
 		msg.setMessage(new String[] { "code is invalid" });
-		
-		//generateErrorLog(HttpStatus.UNAUTHORIZED, msg);
-		
+
 		return new ResponseEntity<Error>(msg, HttpStatus.UNAUTHORIZED);
 	}
 	
@@ -164,9 +127,7 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.BAD_REQUEST.value());
 		msg.setMessage(new String[] { ex.getMessage() });
-		
-		//generateErrorLog(HttpStatus.BAD_REQUEST, msg);
-		
+
 		return new ResponseEntity<Error>(msg, HttpStatus.BAD_REQUEST);
 	}
 	
@@ -175,9 +136,7 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.BAD_REQUEST.value());
 		msg.setMessage(new String[] { "channel does not exist (none/voice/sms/mail)" });
-		
-		//generateErrorLog(HttpStatus.BAD_REQUEST, msg);
-		
+
 		return new ResponseEntity<Error>(msg, HttpStatus.BAD_REQUEST);
 	}
 	
@@ -186,9 +145,7 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		msg.setMessage(new String[] { ex.getMessage() });
-		
-		//generateErrorLog(HttpStatus.INTERNAL_SERVER_ERROR, msg);
-		
+
 		return new ResponseEntity<Error>(msg, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
@@ -197,9 +154,7 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.NOT_FOUND.value());
 		msg.setMessage(new String[] { "user could not be found" });
-		
-		//generateErrorLog(HttpStatus.NOT_FOUND, msg);
-		
+
 		return new ResponseEntity<Error>(msg, HttpStatus.NOT_FOUND);
 	}
 	
@@ -208,21 +163,17 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.BAD_REQUEST.value());
 		msg.setMessage(new String[] { "channel information could not be found (phone number for channel sms/voice or mail for channel mail" });
-		
-		//generateErrorLog(HttpStatus.BAD_REQUEST, msg);
-		
+
 		return new ResponseEntity<Error>(msg, HttpStatus.BAD_REQUEST);
 	}
 
-	/* To uncomment before production
+	
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<ErrorMessage> handleLdapFindOne(Exception ex) {
-		ErrorMessage msg = new ErrorMessage();
+	public ResponseEntity<Error> handleDefaultException(Exception ex) {
+		Error msg = new Error();
 		msg.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-		msg.setMessage("Internal server error");
-		
-		generateErrorLog(HttpStatus.INTERNAL_SERVER_ERROR, msg);
-		
-		return new ResponseEntity<ErrorMessage>(msg, HttpStatus.INTERNAL_SERVER_ERROR);
-	}*/
+		msg.setMessage(new String[] { "Internal server error" });
+
+		return new ResponseEntity<Error>(msg, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 }

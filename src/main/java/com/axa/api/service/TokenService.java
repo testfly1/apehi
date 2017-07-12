@@ -295,7 +295,7 @@ public class TokenService {
 			case none : 
 				tokenDAO.create(new TokenObject(java.util.UUID.randomUUID().toString(), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.none.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));
 				break;
-			case voice : 
+			case voice :
 				if (tokenInput.getPhone() != null && !tokenInput.getPhone().isEmpty())
 					tokenDAO.create(new TokenObject(java.util.UUID.randomUUID().toString(), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.voice.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));
 				else
@@ -307,7 +307,7 @@ public class TokenService {
 				else 
 					throw new MissingInformationChannelException();
 				break;
-			case mail : 
+			case mail :
 				if (tokenInput.getMail() != null && !tokenInput.getMail().isEmpty())
 					tokenDAO.create(new TokenObject(java.util.UUID.randomUUID().toString(), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.mail.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));	
 				else 
@@ -404,7 +404,7 @@ public class TokenService {
 			if (tokenObject.getLockedTime() != null 
 					&& !tokenObject.getLockedTime().isEmpty() 
 					&& tokenObject.getLockDuration() != null) {
-				if ((tokenObject.getLockDuration().equals(-1)) || (getCurrentDate() < (new Long(tokenObject.getLockedTime()) + new Long(tokenObject.getLockDuration())))) { //Special case lockDuration infinite
+				if ((tokenObject.getLockDuration().equals(-1)) || (getCurrentDate() < (Long.parseLong(tokenObject.getLockedTime()) + Long.valueOf(tokenObject.getLockDuration())))) { //Special case lockDuration infinite
 					return true;
 				} else {
 					return false;
