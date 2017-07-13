@@ -146,6 +146,8 @@ public class ExceptionControllerAdvice {
 		msg.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		msg.setMessage(new String[] { ex.getMessage() });
 
+		generateErrorLog(HttpStatus.INTERNAL_SERVER_ERROR, msg);
+		
 		return new ResponseEntity<Error>(msg, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
@@ -173,6 +175,8 @@ public class ExceptionControllerAdvice {
 		Error msg = new Error();
 		msg.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		msg.setMessage(new String[] { "Internal server error" });
+
+		generateErrorLog(HttpStatus.INTERNAL_SERVER_ERROR, msg);
 
 		return new ResponseEntity<Error>(msg, HttpStatus.INTERNAL_SERVER_ERROR);
 	}

@@ -38,7 +38,7 @@ public class ApiConfiguration {
 	}
 
 	@Bean
-    public SecureRandom secureRandom(){
+    public SecureRandom secureRandom() {
        try {
          return SecureRandom.getInstance("SHA1PRNG");
        } catch(Throwable e){     
