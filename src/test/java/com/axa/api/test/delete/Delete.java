@@ -21,7 +21,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.axa.api.configuration.StubLDAPConfig;
+import com.axa.api.configuration.StubOpenAMConfig;
 import com.axa.api.configuration.yml.LdapConfig;
+import com.axa.api.configuration.yml.OpenAMConfig;
 import com.axa.api.configuration.yml.SchemaListConfig;
 import com.axa.api.exception.InvalidSchemaException;
 import com.axa.api.model.response.api.NoBodyResponse;
@@ -30,11 +33,6 @@ import com.axa.api.model.response.api.Token;
 import com.axa.api.model.enumeration.ChannelEnum;
 import com.axa.api.model.input.TokenInput;
 import com.axa.api.model.input.TokenValidation;
-import com.unboundid.ldap.listener.InMemoryDirectoryServer;
-import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
-import com.unboundid.ldap.listener.InMemoryListenerConfig;
-import com.unboundid.ldap.sdk.Entry;
-import com.unboundid.ldif.LDIFException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -42,59 +40,24 @@ import com.unboundid.ldif.LDIFException;
 public class Delete {
 
 	@Autowired
-	RestTemplate restTemplate;
+	private RestTemplate restTemplate;
 	
 	@Autowired
-	SchemaListConfig schemaListConfig;
+	private SchemaListConfig schemaListConfig;
 	
 	@Autowired
-	LdapConfig ldapConfig;
+	private LdapConfig ldapConfig;
 	
-	private InMemoryDirectoryServer LDAPServer;
+	private StubLDAPConfig LDAPServer;
 	
 	@Before
 	public void start() {
-		startStubLDAP();
+		LDAPServer = new StubLDAPConfig(ldapConfig).start();
 	}
-	
-	private static Entry getBaseDomain() throws LDIFException {
-		return new Entry("dn: dc=example,dc=com",
-        		"objectClass: top",
-        		"objectClass: domain",
-        		"dc: example");
-	}
-	
-	private static Entry getTokensOu() throws LDIFException {
-		return new Entry("dn: ou=tokens,dc=example,dc=com",
-        		"objectClass: organizationalUnit",
-        		"objectClass: top",
-        		"ou: tokens",
-        		"description: Tokens OU");
-	}
-	
-	private void startStubLDAP(){
-		InMemoryDirectoryServerConfig config;
-
-		try {
-	        config = new InMemoryDirectoryServerConfig(ldapConfig.getBaseDN());
-	        config.addAdditionalBindCredentials(ldapConfig.getUserName(), ldapConfig.getPassword());
-	        config.setSchema(null);
-	        config.setListenerConfigs(InMemoryListenerConfig.createLDAPConfig("LDAP", Integer.valueOf(ldapConfig.getPort())));
-	        
-	        LDAPServer = new InMemoryDirectoryServer(config);
-	        LDAPServer.add(getBaseDomain());
-	        LDAPServer.add(getTokensOu());
-
-	        LDAPServer.startListening();
-	    } catch (Exception e) {
-	        throw new RuntimeException(e);
-	    }
-	}
-	
 	
 	@After
 	public void stop() {
-		LDAPServer.shutDown(true);
+		LDAPServer.stop();
 	}
 	
 	private ResponseEntity<Token> createToken(TokenInput tok){
