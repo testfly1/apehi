@@ -22,9 +22,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.axa.api.configuration.StubLDAPConfig;
-import com.axa.api.configuration.StubOpenAMConfig;
 import com.axa.api.configuration.yml.LdapConfig;
-import com.axa.api.configuration.yml.OpenAMConfig;
 import com.axa.api.configuration.yml.SchemaListConfig;
 import com.axa.api.exception.InvalidSchemaException;
 import com.axa.api.model.response.api.NoBodyResponse;
