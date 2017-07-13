@@ -1,7 +1,10 @@
 debug: false
+
 server:
   port: 8080
 spring:
+  main:
+    banner-mode: "OFF"
   jackson:
     serialization:
       fail-on-empty-beans: false
@@ -11,7 +14,7 @@ spring:
 logging:
   file: ${API_LOG_FILEPATH}  
   pattern:
-    console: "%msg%n"
+    console:
     file: "%msg%n"
   level:
     root: info

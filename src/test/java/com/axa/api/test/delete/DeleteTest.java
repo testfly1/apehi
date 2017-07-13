@@ -1,4 +1,4 @@
-package com.axa.api.test.unlock;
+package com.axa.api.test.delete;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -20,10 +20,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
 import com.axa.api.configuration.StubLDAPConfig;
+import com.axa.api.configuration.StubOpenAMConfig;
 import com.axa.api.configuration.yml.LdapConfig;
+import com.axa.api.configuration.yml.OpenAMConfig;
 import com.axa.api.configuration.yml.SchemaListConfig;
 import com.axa.api.exception.InvalidSchemaException;
+import com.axa.api.model.response.api.NoBodyResponse;
 import com.axa.api.model.response.api.Status;
 import com.axa.api.model.response.api.Token;
 import com.axa.api.model.enumeration.ChannelEnum;
@@ -33,7 +37,7 @@ import com.axa.api.model.input.TokenValidation;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-public class Unlock {
+public class DeleteTest {
 
 	@Autowired
 	private RestTemplate restTemplate;
@@ -47,16 +51,16 @@ public class Unlock {
 	private StubLDAPConfig LDAPServer;
 	
 	@Before
-	public void start(){
+	public void start() {
 		LDAPServer = new StubLDAPConfig(ldapConfig).start();
 	}
 	
 	@After
-	public void stop(){
+	public void stop() {
 		LDAPServer.stop();
 	}
 	
-	public ResponseEntity<Token> createToken(TokenInput tok){
+	private ResponseEntity<Token> createToken(TokenInput tok){
 		
 		HttpHeaders headers = new HttpHeaders();
 	    headers.add("Content-Type", "application/json");
@@ -76,7 +80,7 @@ public class Unlock {
 		
 		return resp;
 	}
-
+	
 	private void lockToken(TokenInput tok){
 		
 		TokenValidation tv = new TokenValidation();
@@ -99,210 +103,216 @@ public class Unlock {
 		} catch (RestClientException | InvalidSchemaException e) { }
 	}
 	
-	private void unlockToken(TokenInput tok){
+	
+	private void deleteToken(TokenInput tok){
 		
 		HttpHeaders headers = new HttpHeaders();
 	    headers.add("Content-Type", "application/json");
-		
-		ResponseEntity<Status> resp = restTemplate.exchange("http://localhost:8080/tokens/unlock", HttpMethod.POST, new HttpEntity<>(tok, headers), Status.class);
-		
-		assertEquals(resp.getStatusCode(), HttpStatus.OK);
-		assertEquals(resp.getBody().getCode(), HttpStatus.OK.value());
-	}
-	
-	/*
-	 *  Unlock locked token
-	 *  expected OK 200
-	 */
-	@Test
-	public void should_200_unlock_token_1() {
-		
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
 
-		createToken(tok);
-		
-		lockToken(tok);
-	
-		unlockToken(tok);
+		ResponseEntity<NoBodyResponse> resp = restTemplate.exchange("http://localhost:8080/tokens", HttpMethod.DELETE, new HttpEntity<>(tok, headers), NoBodyResponse.class);
+		assertEquals(resp.getStatusCode(), HttpStatus.NO_CONTENT);
+		assertNull(resp.getBody());
 	}
 	
 	/*
-	 *  Unlock not locked token
+	 *  Delete existing token
 	 *  expected OK 200
 	 */
 	@Test
-	public void should_200_unlock_token_2() {
-		
+	public void should_200_delete_token_1() {
+	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
 	    createToken(tok);
-		
-		unlockToken(tok);
+	    
+	    deleteToken(tok);
 	}
 	
 	/*
-	 *  Unlock locked expired token
+	 *  Delete existing locked token
 	 *  expected OK 200
 	 */
 	@Test
-	public void should_200_unlock_token_3() {
+	public void should_200_delete_token_2() {
 		
+		
+		
+		TokenInput tok = new TokenInput();
+		tok.setUserIdentifier("uid_test");
+		tok.setChannel(ChannelEnum.none);
+		tok.setSchema("schema_test-noscope");
+		
+		createToken(tok);
+		
+		lockToken(tok);
+		
+		deleteToken(tok);
+	}
+	
+	/*
+	 *  Delete existing expired token
+	 *  expected OK 200
+	 */
+	@Test
+	public void should_200_delete_token_3() {
+		
+		
+	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
-
-		createToken(tok);
-		
-		lockToken(tok);
-	
+	    
+	    createToken(tok);
+	    
 		try { Thread.sleep(schemaListConfig.getSchemaItemConfig(tok.getSchema()).getChannelConfig(tok.getChannel().toString()).getMaxValidityTime()*1000); } catch (InterruptedException | InvalidSchemaException e) { }
 		
-		unlockToken(tok);
+		deleteToken(tok);
 	}
-
+	
 	/*
-	 *  Unlock locked token missing one of the three required inputs
+	 *  Delete existing token missing one of the three required inputs
 	 *  expected BAD_REQUEST 400
 	 */
 	@Test
-	public void should_400_unlock_token() {
-		
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
-	    
-		createToken(tok);
-		
-		lockToken(tok);
+	public void should_400_delete_token() {
+
+		TokenInput tok1 = new TokenInput();
+		tok1.setChannel(ChannelEnum.none);
+		tok1.setSchema("schema_test-noscope");
 		
 		TokenInput tok2 = new TokenInput();
-		tok2.setChannel(ChannelEnum.none);
-	    tok2.setSchema("schema_test-noscope");
-	    
-	    TokenInput tok3 = new TokenInput();
-	    tok3.setUserIdentifier("uid_test");
-	    tok3.setSchema("schema_test-noscope");
-	    
-	    TokenInput tok4 = new TokenInput();
-		tok4.setUserIdentifier("uid_test");
-		tok4.setChannel(ChannelEnum.none);
-	    
-		try{
-			unlockToken(tok2);
+		tok2.setUserIdentifier("uid_test");
+		tok2.setSchema("schema_test-noscope");
+		
+		TokenInput tok3 = new TokenInput();
+		tok3.setUserIdentifier("uid_test");
+		tok3.setChannel(ChannelEnum.none);
+		
+		TokenInput tok_test = new TokenInput();
+		tok_test.setUserIdentifier("uid_test");
+		tok_test.setChannel(ChannelEnum.none);
+		tok_test.setSchema("schema_test-noscope");
+
+		createToken(tok_test);
+		
+		try {
+			deleteToken(tok1);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
-		try{
-			unlockToken(tok3);
+		try {
+			deleteToken(tok2);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 		
-		try{
-			unlockToken(tok4);
+		try {
+			deleteToken(tok3);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.BAD_REQUEST);
 		}
 	}
 	
 	/*
-	 *  Unlock locked token with wrong userIdentifier
+	 *  Delete existing token with wrong userIdentifier
 	 *  expected NOT_FOUND 404
 	 */
 	@Test
-	public void should_404_unlock_token_1() {
-	    
+	public void should_404_delete_token_1() {
+		
 	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
+	    tok.setUserIdentifier("fake_uid");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
 	    
-	    createToken(tok);
-		
-		lockToken(tok);
-		
-		tok.setUserIdentifier("fake_uid");
-
-		try {
-			unlockToken(tok);
-		} catch (HttpClientErrorException ex) {
-			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
-		}
-	}
-
-	/*
-	 *  Unlock locked token with wrong channel
-	 *  expected NOT_FOUND 404
-	 */
-	@Test
-	public void should_404_unlock_token_2() {
-		
-	    TokenInput tok = new TokenInput();
-	    tok.setUserIdentifier("uid_test");
-	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
+	    TokenInput tok_test = new TokenInput();
+		tok_test.setUserIdentifier("uid_test");
+		tok_test.setChannel(ChannelEnum.none);
+		tok_test.setSchema("schema_test-noscope");
 	    
-	    createToken(tok);
-		
-		lockToken(tok);
-		
-		tok.setChannel(ChannelEnum.mail);
-				
+	    createToken(tok_test);
+	    
 		try {
-			unlockToken(tok);
+			deleteToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
 	}
 	
 	/*
-	 *  Unlock locked token with wrong schema
+	 *  Delete existing token with wrong channel
 	 *  expected NOT_FOUND 404
 	 */
 	@Test
-	public void should_404_unlock_token_3() {
-		
+	public void should_404_delete_token_2() {
+	    
+	    TokenInput tok = new TokenInput();
+	    tok.setUserIdentifier("uid_test");
+	    tok.setChannel(ChannelEnum.sms);
+	    tok.setSchema("schema_test-noscope");
+	    
+	    TokenInput tok_test = new TokenInput();
+		tok_test.setUserIdentifier("uid_test");
+		tok_test.setChannel(ChannelEnum.none);
+		tok_test.setSchema("schema_test-noscope");
+	    
+	    createToken(tok_test);
+	    
+		try {
+			deleteToken(tok);
+		} catch (HttpClientErrorException ex) {
+			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	/*
+	 *  Delete existing token with wrong schema
+	 *  expected NOT_FOUND 404
+	 */
+	@Test
+	public void should_404_delete_token_3() {
+	    
 	    TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
-	    tok.setSchema("schema_test-noscope");
-	    
-	    createToken(tok);
-	    
-	    lockToken(tok);
-		
 		tok.setSchema("fake_schema");
 		
+		TokenInput tok_test = new TokenInput();
+		tok_test.setUserIdentifier("uid_test");
+		tok_test.setChannel(ChannelEnum.none);
+		tok_test.setSchema("schema_test-noscope");
+	    
+	    createToken(tok_test);
+	    
 		try {
-			unlockToken(tok);
+			deleteToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}
 	}
 	
 	/*
-	 *  Unlock non-existing token
+	 *  Delete non-existing token
 	 *  expected NOT_FOUND 404
 	 */
 	@Test
-	public void should_404_unlock_token_4() {
-			    
-	    TokenInput tok = new TokenInput();
+	public void should_404_delete_token_4() {
+		
+		TokenInput tok = new TokenInput();
 	    tok.setUserIdentifier("uid_test");
 	    tok.setChannel(ChannelEnum.none);
 	    tok.setSchema("schema_test-noscope");
+	 
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.add("Content-Type", "application/json");
 	    
 		try {
-			unlockToken(tok);
+			deleteToken(tok);
 		} catch (HttpClientErrorException ex) {
 			assertEquals(ex.getStatusCode(), HttpStatus.NOT_FOUND);
 		}

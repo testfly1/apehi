@@ -28,7 +28,7 @@ import com.axa.api.model.input.UserInput;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-public class Authenticate {
+public class AuthenticateTest {
 	
 	@Autowired
 	private RestTemplate restTemplate;

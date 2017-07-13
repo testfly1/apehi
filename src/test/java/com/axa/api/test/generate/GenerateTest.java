@@ -45,7 +45,7 @@ import com.axa.api.model.input.TokenValidation;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-public class Generate {
+public class GenerateTest {
 
 	@Autowired
 	private RestTemplate restTemplate;

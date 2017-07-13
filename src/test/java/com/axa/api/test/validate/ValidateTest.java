@@ -33,7 +33,7 @@ import com.axa.api.model.input.TokenValidation;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-public class Validate {
+public class ValidateTest {
 
 	@Autowired
 	private RestTemplate restTemplate;
