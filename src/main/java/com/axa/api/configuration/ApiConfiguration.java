@@ -17,7 +17,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.axa.api.configuration.yml.LdapConfig;
 import com.axa.api.configuration.yml.SSLConfig;
-import com.axa.api.model.logging.EventLog;
 
 /**
  * Initialization of the components' values and context of the API
@@ -38,7 +37,7 @@ public class ApiConfiguration {
 	}
 
 	@Bean
-    public SecureRandom secureRandom(){
+    public SecureRandom secureRandom() {
        try {
          return SecureRandom.getInstance("SHA1PRNG");
        } catch(Throwable e){     
