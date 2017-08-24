@@ -349,7 +349,7 @@ public class TokenService {
 				// lock token because too many failure
 				tokenObject.setFailedAttempt(tokenObject.getMaxFailedAttempt());
 				tokenObject.setStatus("locked");
-				tokenObject.setLockedTime(getCurrentDate().toString());
+				tokenObject.setLockedTime(getCurrentDate());
 				tokenDAO.update(tokenObject);
 			} else {
 				tokenObject.setFailedAttempt(tokenObject.getFailedAttempt() + 1);
@@ -401,10 +401,9 @@ public class TokenService {
 		// Check if the status is locked first
 		if (tokenObject.getStatus() != null && tokenObject.getStatus().equals("locked")) {
 			// In case it is locked, is it still locked (current time is > to lockedtime + duration)
-			if (tokenObject.getLockedTime() != null 
-					&& !tokenObject.getLockedTime().isEmpty() 
+			if (tokenObject.getLockedTime() != null
 					&& tokenObject.getLockDuration() != null) {
-				if ((tokenObject.getLockDuration().equals(-1)) || (getCurrentDate() < (Long.parseLong(tokenObject.getLockedTime()) + Long.valueOf(tokenObject.getLockDuration())))) { //Special case lockDuration infinite
+				if ((tokenObject.getLockDuration().equals(-1)) || (getCurrentDate() < (tokenObject.getLockedTime() + tokenObject.getLockDuration()))) { //Special case lockDuration infinite
 					return true;
 				} else {
 					return false;

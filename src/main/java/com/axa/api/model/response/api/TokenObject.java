@@ -58,7 +58,7 @@ public class TokenObject {
 	@Attribute(name = "schema")
 	private String schema;
 	@Attribute(name = "lockedTime")
-	private String lockedTime;
+	private Long lockedTime;
 	@Attribute(name = "lockDuration")
 	private Integer lockDuration;
 	
@@ -179,10 +179,10 @@ public class TokenObject {
 	public void setSchema(String schema) {
 		this.schema = schema;
 	}
-	public String getLockedTime() {
+	public Long getLockedTime() {
 		return lockedTime;
 	}
-	public void setLockedTime(String lockedTime) {
+	public void setLockedTime(Long lockedTime) {
 		this.lockedTime = lockedTime;
 	}
 	public Integer getLockDuration() {

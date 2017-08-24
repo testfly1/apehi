@@ -228,7 +228,7 @@ public class ApiController {
     @RequestMapping(value = "/tokens/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ApiOperation(value = "Validate a token", 
     			  notes = "Validate a token for a specific userIdentifier/channel/schema\n\n"
-    					  + "Possible return codes : a 404 if the token is not found, a 401 if token is locked, a 403 if the code is not valid, a 400 if input parameters are invalid or a 200 if it is valid",
+    					  + "Possible return codes : a 404 if the token is not found, a 403 if token is locked, a 401 if the code is not valid, a 400 if input parameters are invalid or a 200 if it is valid",
     			  response = Status.class,
     			  tags = { "Tokens" })
     public Status validate(
