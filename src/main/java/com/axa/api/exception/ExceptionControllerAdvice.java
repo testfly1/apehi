@@ -169,7 +169,6 @@ public class ExceptionControllerAdvice {
 		return new ResponseEntity<Error>(msg, HttpStatus.BAD_REQUEST);
 	}
 
-	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Error> handleDefaultException(Exception ex) {
 		Error msg = new Error();

@@ -4,11 +4,13 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.axa.api.exception.InternalServerErrorException;
@@ -72,7 +74,7 @@ public class ApiController {
     			  		+ "- \"schema\" input corresponds to a usecase or profile. It itself is linked to a scope which is a referential or subset of a referential, which must be declared and configured on backend side.\n\n"
     					+ "e.g : \"myAxaCh\" schema is linked to the scope \"AXA-CH-B2C\" in the b2c repository\n\n"
     			  		+ "User attributes (see response model) are returned if successful\n\n"
-    					+ "Possible return codes : a 404 if the user is not found, a 401 if authentication failed, a 400 if input parameters are invalid or a 200 is authentication is successful",
+    					+ "Possible return codes : a 401 if authentication failed (unexisting user or wrong login/password), a 400 if input parameters are invalid or a 200 is authentication is successful",
     			  response = User.class,
     			  tags = { "Users" })
     public User authenticate(
@@ -166,6 +168,7 @@ public class ApiController {
      * @throws InvalidSchemaException
      */
     @RequestMapping(value = "/tokens", method = RequestMethod.DELETE, consumes = "application/json")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @ApiOperation(value = "Delete a token",
     			  notes = "Delete a token (wipe from repository)\n\n"
     					  + "The endpoint bypasses the lockout feature.\n\n"
