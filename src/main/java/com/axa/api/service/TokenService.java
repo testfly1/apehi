@@ -293,23 +293,23 @@ public class TokenService {
 		
 		switch (tokenInput.getChannel()) {
 			case none : 
-				tokenDAO.create(new TokenObject(java.util.UUID.randomUUID().toString(), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.none.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));
+				tokenDAO.create(new TokenObject(generateUidFromToken(tokenInput), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.none.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));
 				break;
 			case voice :
 				if (tokenInput.getPhone() != null && !tokenInput.getPhone().isEmpty())
-					tokenDAO.create(new TokenObject(java.util.UUID.randomUUID().toString(), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.voice.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));
+					tokenDAO.create(new TokenObject(generateUidFromToken(tokenInput), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.voice.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));
 				else
 					throw new MissingInformationChannelException();
 				break;
 			case sms : 
 				if (tokenInput.getPhone() != null && !tokenInput.getPhone().isEmpty())
-					tokenDAO.create(new TokenObject(java.util.UUID.randomUUID().toString(), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.sms.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));
+					tokenDAO.create(new TokenObject(generateUidFromToken(tokenInput), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.sms.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));
 				else 
 					throw new MissingInformationChannelException();
 				break;
 			case mail :
 				if (tokenInput.getMail() != null && !tokenInput.getMail().isEmpty())
-					tokenDAO.create(new TokenObject(java.util.UUID.randomUUID().toString(), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.mail.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));	
+					tokenDAO.create(new TokenObject(generateUidFromToken(tokenInput), tokenInput.getUserIdentifier(), tokenInput.getPhone(), tokenInput.getMail(), getCurrentDate(), hash(code, tokenInput.getUserIdentifier()), ChannelEnum.mail.toString(), "generated", channelConfig.getMaxValidityTime(), 0, channelConfig.getMaxFailedAttempt(), 0, channelConfig.getMaxSuccessfulAttempt(), tokenInput.getSchema(), channelConfig.getLockDuration()));	
 				else 
 					throw new MissingInformationChannelException();
 				break;
@@ -438,5 +438,14 @@ public class TokenService {
 	 */
 	private String randomCode() {       
 		return String.format("%06d", secureRandom.nextInt(1000000));
+	}
+	
+	/**
+	 * Concatenation of userIdentifier + channel + schema
+	 * @param TokenInput object
+	 * @return String
+	 */
+	private String generateUidFromToken(TokenInput tok) {       
+		return java.util.UUID.nameUUIDFromBytes((tok.getUserIdentifier() + tok.getChannel().toString() + tok.getSchema()).getBytes()).toString();
 	}
 }
